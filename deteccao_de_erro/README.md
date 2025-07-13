@@ -232,7 +232,31 @@ from crc import Calculator, Crc16
 
 # --- Insira sua função calcular_crc_manual e xor_bits aqui ---
 
- # Usando um padrão de 16 bits como referência
+def xor_bits(a, b):
+    return ''.join(['0' if x == y else '1' for x, y in zip(a, b)])
+
+
+def calcular_crc_manual(dados_bits: str, gerador_bits: str) -> str:
+    mensagem_estendida = dados_bits + '0' * (len(gerador_bits) - 1)
+    bits_usados = len(gerador_bits)
+
+    temp = mensagem_estendida[0:len(gerador_bits)]
+
+    while bits_usados < len(mensagem_estendida):
+        if temp[0] == '0':
+            temp = temp[1:] + mensagem_estendida[bits_usados]
+        else:
+            temp = xor_bits(temp, gerador_bits)[1:] + mensagem_estendida[bits_usados]
+        bits_usados += 1
+
+    if temp[0] == '1':
+        temp = xor_bits(temp, gerador_bits)[1:]
+    else:
+        temp = temp[1:]
+
+    return temp
+
+# Usando um padrão de 16 bits como referência
 calculator_lib = Calculator(Crc16.MODBUS)
 
 # Tamanhos de mensagem para teste (em bytes)
@@ -312,9 +336,9 @@ Esta etapa final é uma investigação para encontrar os limites da sua implemen
 
 | VARIAVEL              | VALOR |
 | :-                    | :-    |
-| `MENSAGEM`            |   ?   |
-| `MENSAGEM_BASE`       |   ?   |
-| `CRC`                 |   ?   |
+| `GERADOR `            |   11000000000000101   |
+| `MENSAGEM_BASE`       |   010101100110100101101110111011010110001101101001011101010111001100100000010010010110000101101110001000000100000101101100011101100110010101110011001000000100110001101111011100000110010101110011   |
+| `CRC`                 |   1011111010100101   |
 
 ### 4.2 - A Caça aos Erros
 
